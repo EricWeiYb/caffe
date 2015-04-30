@@ -4,34 +4,53 @@
 #include "caffe/layer.hpp"
 #include "caffe/util/math_functions.hpp"
 #include "caffe/vision_layers.hpp"
-
+/************************
+描述：SoftmaxLayer类生命在Common_Layer.hpp中657行
+继承与Layer层
+************************/
 namespace caffe {
-
+/****************
+bottom是输入参数
+top是输出参数
+定义数据块大小
+*****************/
 template <typename Dtype>
 void SoftmaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
+  //检查softmax的axis参数，表示一次训练的图的个数，并返回，详见Blob类
   softmax_axis_ =
       bottom[0]->CanonicalAxisIndex(this->layer_param_.softmax_param().axis());
+  //将bottom[0]赋值给top[0]
   top[0]->ReshapeLike(*bottom[0]);
+  //定义一个vector，初始化为1个mult_dims[0] = bottom[0]对象中shape_[softmax_axis]
   vector<int> mult_dims(1, bottom[0]->shape(softmax_axis_));
+  //用mult_dims初始化求和结构体sum_multiplier_
   sum_multiplier_.Reshape(mult_dims);
   Dtype* multiplier_data = sum_multiplier_.mutable_cpu_data();
+  //初始化multiplier_data的数据都为1
   caffe_set(sum_multiplier_.count(), Dtype(1), multiplier_data);
   outer_num_ = bottom[0]->count(0, softmax_axis_);
   inner_num_ = bottom[0]->count(softmax_axis_ + 1);
+  //返回数据块的大小
   vector<int> scale_dims = bottom[0]->shape();
   scale_dims[softmax_axis_] = 1;
+  //赋值scale
   scale_.Reshape(scale_dims);
 }
-
+/*************
+定义cpu前馈
+*************/
 template <typename Dtype>
 void SoftmaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
+  //返回const型数据
   const Dtype* bottom_data = bottom[0]->cpu_data();
+  //返回可修改数据
   Dtype* top_data = top[0]->mutable_cpu_data();
   Dtype* scale_data = scale_.mutable_cpu_data();
   int channels = bottom[0]->shape(softmax_axis_);
   int dim = bottom[0]->count() / outer_num_;
+  //数据copy，从bottom到top
   caffe_copy(bottom[0]->count(), bottom_data, top_data);
   // We need to subtract the max to avoid numerical issues, compute the exp,
   // and then normalize.

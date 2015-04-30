@@ -26,16 +26,19 @@ void Blob<Dtype>::Reshape(const vector<int>& shape) {
   shape_.resize(shape.size());
   for (int i = 0; i < shape.size(); ++i) {
     CHECK_GE(shape[i], 0);
+    //重新计算数据乘积count_
     count_ *= shape[i];
     shape_[i] = shape[i];
   }
   if (count_ > capacity_) {
+    //定义大小
     capacity_ = count_;
+    //为data_ 和 diff_ 初始化
     data_.reset(new SyncedMemory(capacity_ * sizeof(Dtype)));
     diff_.reset(new SyncedMemory(capacity_ * sizeof(Dtype)));
   }
 }
-
+//重构Reshape函数进行shape初始化
 template <typename Dtype>
 void Blob<Dtype>::Reshape(const BlobShape& shape) {
   CHECK_LE(shape.dim_size(), kMaxBlobAxes);
@@ -45,7 +48,6 @@ void Blob<Dtype>::Reshape(const BlobShape& shape) {
   }
   Reshape(shape_vec);
 }
-
 template <typename Dtype>
 void Blob<Dtype>::ReshapeLike(const Blob<Dtype>& other) {
   Reshape(other.shape());

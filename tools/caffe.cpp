@@ -1,3 +1,4 @@
+//该类是一个程序级的记录程序日志的C++库
 #include <glog/logging.h>
 
 #include <cstring>
@@ -16,7 +17,8 @@ using caffe::shared_ptr;
 using caffe::Timer;
 using caffe::vector;
 
-
+//gflags库中的函数，处理命令行参数的库
+//检验参数输入是否合理
 DEFINE_int32(gpu, -1,
     "Run in GPU mode on given device ID.");
 DEFINE_string(solver, "",
@@ -34,6 +36,7 @@ DEFINE_int32(iterations, 50,
 // A simple registry for caffe commands.
 typedef int (*BrewFunction)();
 typedef std::map<caffe::string, BrewFunction> BrewMap;
+//map类型
 BrewMap g_brew_map;
 
 #define RegisterBrewFunction(func) \
@@ -46,12 +49,21 @@ class __Registerer_##func { \
 }; \
 __Registerer_##func g_registerer_##func; \
 }
+/***********************
+描述：
+输入：caffe::string 
+输出：BrewFunction函数指针
 
+
+***********************/
 static BrewFunction GetBrewFunction(const caffe::string& name) {
+  //利用map类检查name出现的次数
   if (g_brew_map.count(name)) {
     return g_brew_map[name];
   } else {
+    //如果没有找到指定name，输出error
     LOG(ERROR) << "Available caffe actions:";
+    //遍历整个map，输出错误信息
     for (BrewMap::iterator it = g_brew_map.begin();
          it != g_brew_map.end(); ++it) {
       LOG(ERROR) << "\t" << it->first;
@@ -71,10 +83,12 @@ static BrewFunction GetBrewFunction(const caffe::string& name) {
 int device_query() {
   CHECK_GT(FLAGS_gpu, -1) << "Need a device ID to query.";
   LOG(INFO) << "Querying device ID = " << FLAGS_gpu;
+  //设置gpu，调用Caffe类，详见common.hpp
   caffe::Caffe::SetDevice(FLAGS_gpu);
   caffe::Caffe::DeviceQuery();
   return 0;
 }
+//注册device_query函数
 RegisterBrewFunction(device_query);
 
 // Load the weights from the specified caffemodel(s) into the train and
@@ -92,6 +106,9 @@ void CopyLayers(caffe::Solver<float>* solver, const std::string& model_list) {
 }
 
 // Train / Finetune a model.
+/********************
+描述：注册训练函数
+*********************/
 int train() {
   CHECK_GT(FLAGS_solver.size(), 0) << "Need a solver definition to train.";
   CHECK(!FLAGS_snapshot.size() || !FLAGS_weights.size())

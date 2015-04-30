@@ -30,6 +30,7 @@ class AccuracyLayer : public Layer<Dtype> {
    *     correct.  For example, if @f$ k = 5 @f$, a prediction is counted
    *     correct if the correct label is among the top 5 predicted labels.
    */
+   //定义一个LayerParameter型的message（protobuf），详情看caffe.proto,263行
   explicit AccuracyLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
@@ -654,6 +655,7 @@ class SigmoidCrossEntropyLossLayer : public LossLayer<Dtype> {
 };
 
 // Forward declare SoftmaxLayer for use in SoftmaxWithLossLayer.
+//类定义在common_layer.hpp中
 template <typename Dtype> class SoftmaxLayer;
 
 /**

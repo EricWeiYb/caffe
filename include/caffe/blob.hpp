@@ -18,7 +18,7 @@ namespace caffe {
  * @brief A wrapper around SyncedMemory holders serving as the basic
  *        computational unit through which Layer%s, Net%s, and Solver%s
  *        interact.
- *
+ *Dtype表示要处理的数据类型，包括gpu上的数据类型
  * TODO(dox): more thorough description.
  */
 template <typename Dtype>
@@ -28,11 +28,19 @@ class Blob {
        : data_(), diff_(), count_(0), capacity_(0) {}
 
   /// @brief Deprecated; use <code>Blob(const vector<int>& shape)</code>.
+  //构造函数
   explicit Blob(const int num, const int channels, const int height,
       const int width);
   explicit Blob(const vector<int>& shape);
 
   /// @brief Deprecated; use <code>Reshape(const vector<int>& shape)</code>.
+  /********************
+  @brief:初始化vector<int> shape_,内涵四个元素
+  @shape_[0] = num
+  @shape_[1] = channels
+  @shape_[2] = height
+  @shape_[3] = width
+  ********************/
   void Reshape(const int num, const int channels, const int height,
       const int width);
   /**
@@ -51,15 +59,19 @@ class Blob {
    */
   void Reshape(const vector<int>& shape);
   void Reshape(const BlobShape& shape);
+  //与Reshape函数功能相同
   void ReshapeLike(const Blob& other);
   inline string shape_string() const {
     ostringstream stream;
+    //shape_:int型vector
+    //输出shape
     for (int i = 0; i < shape_.size(); ++i) {
       stream << shape_[i] << " ";
     }
     stream << "(" << count_ << ")";
     return stream.str();
   }
+  //返回shape
   inline const vector<int>& shape() const { return shape_; }
   /**
    * @brief Returns the dimension of the index-th axis (or the negative index-th
@@ -68,11 +80,14 @@ class Blob {
    * @param index the axis index, which may be negative as it will be
    *        "canonicalized" using CanonicalAxisIndex.
    *        Dies on out of range index.
+   *返回shape对应shape中对应位置的元素，CanonicalAxisIndex是检查传入参数是否正确
    */
   inline int shape(int index) const {
     return shape_[CanonicalAxisIndex(index)];
   }
+  //返回shape的长度
   inline int num_axes() const { return shape_.size(); }
+  //返回shape成绩大小，在Reshape函数中计算
   inline int count() const { return count_; }
 
   /**
@@ -82,6 +97,7 @@ class Blob {
    * @param start_axis The first axis to include in the slice.
    *
    * @param end_axis The first axis to exclude from the slice.
+   *计算shape_中从start－end的成绩
    */
   inline int count(int start_axis, int end_axis) const {
     CHECK_LE(start_axis, end_axis);
@@ -100,6 +116,7 @@ class Blob {
    *        axis to the final axis.
    *
    * @param start_axis The first axis to include in the slice.
+   *计算从start到最后一个元素的乘积
    */
   inline int count(int start_axis) const {
     return count(start_axis, num_axes());
@@ -115,6 +132,7 @@ class Blob {
    *        e.g., the last axis index (num_axes() - 1) if index == -1,
    *        the second to last if index == -2, etc.
    *        Dies on out of range index.
+   ＊检查传入参数是否是在shape大小范围内，并返回
    */
   inline int CanonicalAxisIndex(int axis_index) const {
     CHECK_GE(axis_index, -num_axes())
@@ -123,6 +141,7 @@ class Blob {
     CHECK_LT(axis_index, num_axes())
         << "axis " << axis_index << " out of range for " << num_axes()
         << "-D Blob with shape " << shape_string();
+    //如果传入参数小于0，则返回anxis_index + shape_容器的大小
     if (axis_index < 0) {
       return axis_index + num_axes();
     }
@@ -137,6 +156,7 @@ class Blob {
   inline int height() const { return LegacyShape(2); }
   /// @brief Deprecated legacy shape accessor width: use shape(3) instead.
   inline int width() const { return LegacyShape(3); }
+  //返回shape_中对应位置
   inline int LegacyShape(int index) const {
     CHECK_LE(num_axes(), 4)
         << "Cannot use legacy accessors on Blobs with > 4 axes.";
@@ -150,7 +170,7 @@ class Blob {
     }
     return shape(index);
   }
-
+   //计算偏移量
   inline int offset(const int n, const int c = 0, const int h = 0,
       const int w = 0) const {
     CHECK_GE(n, 0);
@@ -216,17 +236,21 @@ class Blob {
     CHECK(diff_);
     return diff_;
   }
-
+  //返回data_的cpu数据
   const Dtype* cpu_data() const;
+  //设置data_数据
   void set_cpu_data(Dtype* data);
+  //返回data_的gpu数据
   const Dtype* gpu_data() const;
   const Dtype* cpu_diff() const;
   const Dtype* gpu_diff() const;
+  //返回cpu或gpu的数据指针，并更改存储状态
   Dtype* mutable_cpu_data();
   Dtype* mutable_gpu_data();
   Dtype* mutable_cpu_diff();
   Dtype* mutable_gpu_diff();
   void Update();
+  //数据转换，从blobproto到blob
   void FromProto(const BlobProto& proto, bool reshape = true);
   void ToProto(BlobProto* proto, bool write_diff = false) const;
 
@@ -266,6 +290,7 @@ class Blob {
   bool ShapeEquals(const BlobProto& other);
 
  protected:
+  //定义一个SyncedMemory类的指针，该类为内存处理类，详见syncedmemory.hpp
   shared_ptr<SyncedMemory> data_;
   shared_ptr<SyncedMemory> diff_;
   vector<int> shape_;

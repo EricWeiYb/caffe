@@ -288,6 +288,7 @@ class Layer {
 
  protected:
   /** The protobuf that stores the layer parameters */
+  //这一层的参数
   LayerParameter layer_param_;
   /** The phase: TRAIN or TEST */
   Phase phase_;

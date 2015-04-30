@@ -32,10 +32,14 @@ void caffe_axpy(const int N, const Dtype alpha, const Dtype* X,
 template <typename Dtype>
 void caffe_cpu_axpby(const int N, const Dtype alpha, const Dtype* X,
     const Dtype beta, Dtype* Y);
-
+/***************
+数据copy，从x到y
+***************/
 template <typename Dtype>
 void caffe_copy(const int N, const Dtype *X, Dtype *Y);
-
+/**************
+初始化X中的N的数据为alpha
+**************/
 template <typename Dtype>
 void caffe_set(const int N, const Dtype alpha, Dtype *X);
 
