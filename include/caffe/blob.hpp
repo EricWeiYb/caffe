@@ -132,7 +132,7 @@ class Blob {
    *        e.g., the last axis index (num_axes() - 1) if index == -1,
    *        the second to last if index == -2, etc.
    *        Dies on out of range index.
-   ＊检查传入参数是否是在shape大小范围内，并返回
+   *检查传入参数是否是在shape大小范围内，并返回
    */
   inline int CanonicalAxisIndex(int axis_index) const {
     CHECK_GE(axis_index, -num_axes())

@@ -52,7 +52,7 @@ class Solver {
   virtual void SnapshotSolverState(SolverState* state) = 0;
   virtual void RestoreSolverState(const SolverState& state) = 0;
   void DisplayOutputBlobs(const int net_id);
-
+  //参数表
   SolverParameter param_;
   int iter_;
   int current_step_;

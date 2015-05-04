@@ -18,12 +18,16 @@ Solver<Dtype>::Solver(const SolverParameter& param)
     : net_() {
   Init(param);
 }
+/**********************
 
+构造函数，根据solver.proto和train_val构造网络结构
+**********************/
 template <typename Dtype>
 Solver<Dtype>::Solver(const string& param_file)
     : net_() {
   SolverParameter param;
   ReadProtoFromTextFileOrDie(param_file, &param);
+  //设置网络参数
   Init(param);
 }
 
@@ -31,21 +35,27 @@ template <typename Dtype>
 void Solver<Dtype>::Init(const SolverParameter& param) {
   LOG(INFO) << "Initializing solver from parameters: " << std::endl
             << param.DebugString();
+  //设置param_参数
   param_ = param;
   CHECK_GE(param_.average_loss(), 1) << "average_loss should be non-negative.";
   if (param_.random_seed() >= 0) {
     Caffe::set_random_seed(param_.random_seed());
   }
   // Scaffolding code
+  //初始化训练网络
   InitTrainNet();
+  //初始化测试网络
   InitTestNets();
   LOG(INFO) << "Solver scaffolding done.";
   iter_ = 0;
   current_step_ = 0;
 }
-
+/***********************
+根据proto生成的类，自动加载网络信息
+************************/
 template <typename Dtype>
 void Solver<Dtype>::InitTrainNet() {
+  //训练网络的层数
   const int num_train_nets = param_.has_net() + param_.has_net_param() +
       param_.has_train_net() + param_.has_train_net_param();
   const string& field_names = "net, net_param, train_net, train_net_param";
@@ -81,7 +91,10 @@ void Solver<Dtype>::InitTrainNet() {
   net_param.mutable_state()->CopyFrom(net_state);
   net_.reset(new Net<Dtype>(net_param));
 }
+/*******************
 
+初始化测试网络的参数
+*******************/
 template <typename Dtype>
 void Solver<Dtype>::InitTestNets() {
   const bool has_net_param = param_.has_net_param();
@@ -157,24 +170,33 @@ void Solver<Dtype>::InitTestNets() {
     test_nets_[i]->set_debug_info(param_.debug_info());
   }
 }
+/********************
 
+
+传入当前迭代次数
+********************/
 template <typename Dtype>
 void Solver<Dtype>::Step(int iters) {
   vector<Blob<Dtype>*> bottom_vec;
+  //iter_ 从0开始
   const int start_iter = iter_;
   const int stop_iter = iter_ + iters;
+  //上一次迭代的输出误差
   int average_loss = this->param_.average_loss();
   vector<Dtype> losses;
   Dtype smoothed_loss = 0;
 
   for (; iter_ < stop_iter; ++iter_) {
+    //每test_interval次测试一次误差
     if (param_.test_interval() && iter_ % param_.test_interval() == 0
         && (iter_ > 0 || param_.test_initialization())) {
       TestAll();
     }
-
+    //显示的标志位
     const bool display = param_.display() && iter_ % param_.display() == 0;
+    //设置调试信息
     net_->set_debug_info(display && param_.debug_info());
+    //前向反馈计算误差
     Dtype loss = net_->ForwardBackward(bottom_vec);
     if (losses.size() < average_loss) {
       losses.push_back(loss);
@@ -220,8 +242,9 @@ void Solver<Dtype>::Step(int iters) {
 template <typename Dtype>
 void Solver<Dtype>::Solve(const char* resume_file) {
   LOG(INFO) << "Solving " << net_->name();
+  //学习率
   LOG(INFO) << "Learning Rate Policy: " << param_.lr_policy();
-
+  //继续上一次的学习
   if (resume_file) {
     LOG(INFO) << "Restoring previous solver status from " << resume_file;
     Restore(resume_file);
@@ -229,6 +252,7 @@ void Solver<Dtype>::Solve(const char* resume_file) {
 
   // For a network that is trained by the solver, no bottom or top vecs
   // should be given, and we will just provide dummy vecs.
+  //更新学习阶段，以及最大迭代次数，每display次显示一次，每test_interval次测试一次
   Step(param_.max_iter() - iter_);
   // If we haven't already, save a snapshot after optimization, unless
   // overridden by setting snapshot_after_train := false
@@ -373,6 +397,7 @@ void Solver<Dtype>::Restore(const char* state_file) {
 //
 // where base_lr, max_iter, gamma, step, stepvalue and power are defined
 // in the solver parameter protocol buffer, and iter is the current iteration.
+// 学习率更新
 template <typename Dtype>
 Dtype SGDSolver<Dtype>::GetLearningRate() {
   Dtype rate;

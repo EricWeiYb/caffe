@@ -17,14 +17,14 @@ top是输出参数
 template <typename Dtype>
 void SoftmaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  //检查softmax的axis参数，表示一次训练的图的个数，并返回，详见Blob类
+  //检查softmax的axis参数，并返回softmax的参数axis，详见Blob类
   softmax_axis_ =
       bottom[0]->CanonicalAxisIndex(this->layer_param_.softmax_param().axis());
-  //将bottom[0]赋值给top[0]
+  //全链接，将上一层的数据尺寸给下一层，将bottom[0]赋值给top[0]
   top[0]->ReshapeLike(*bottom[0]);
-  //定义一个vector，初始化为1个mult_dims[0] = bottom[0]对象中shape_[softmax_axis]
+  //定义一个vector，个数为1，mult_dims[0] = bottom[0]对象中shape_[softmax_axis]
   vector<int> mult_dims(1, bottom[0]->shape(softmax_axis_));
-  //用mult_dims初始化求和结构体sum_multiplier_
+  //sum_multiplier_设置为一维shape_[softmax_axis]个数据
   sum_multiplier_.Reshape(mult_dims);
   Dtype* multiplier_data = sum_multiplier_.mutable_cpu_data();
   //初始化multiplier_data的数据都为1

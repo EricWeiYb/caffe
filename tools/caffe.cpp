@@ -114,8 +114,9 @@ int train() {
   CHECK(!FLAGS_snapshot.size() || !FLAGS_weights.size())
       << "Give a snapshot to resume training or weights to finetune "
       "but not both.";
-
+  //设置训练参数
   caffe::SolverParameter solver_param;
+  //io.hpp中定义，读取solver参数
   caffe::ReadProtoFromTextFileOrDie(FLAGS_solver, &solver_param);
 
   // If the gpu flag is not provided, allow the mode and device to be set
@@ -136,11 +137,13 @@ int train() {
   }
 
   LOG(INFO) << "Starting Optimization";
+  //训练函数函数启动入口，并使用solver_param进行网络初始化
   shared_ptr<caffe::Solver<float> >
     solver(caffe::GetSolver<float>(solver_param));
 
   if (FLAGS_snapshot.size()) {
     LOG(INFO) << "Resuming from " << FLAGS_snapshot;
+    //网络启动主函数
     solver->Solve(FLAGS_snapshot);
   } else if (FLAGS_weights.size()) {
     CopyLayers(&*solver, FLAGS_weights);

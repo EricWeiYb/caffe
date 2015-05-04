@@ -706,6 +706,7 @@ message SliceParameter {
 
 // Message that stores parameters used by SoftmaxLayer, SoftmaxWithLossLayer
 message SoftmaxParameter {
+  //选择softmax的引擎
   enum Engine {
     DEFAULT = 0;
     CAFFE = 1;
