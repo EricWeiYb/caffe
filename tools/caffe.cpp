@@ -137,7 +137,7 @@ int train() {
   }
 
   LOG(INFO) << "Starting Optimization";
-  //训练函数函数启动入口，并使用solver_param进行网络初始化
+  //训练函数启动入口，并使用solver_param进行网络初始化
   shared_ptr<caffe::Solver<float> >
     solver(caffe::GetSolver<float>(solver_param));
 

@@ -157,10 +157,13 @@ int feature_extraction_pipeline(int argc, char** argv) {
         for (int d = 0; d < dim_features; ++d) {
           datum.add_float_data(feature_blob_data[d]);
         }
+        //文件名
         int length = snprintf(key_str, kMaxKeyStrLength, "%d",
             image_indices[i]);
         string out;
+        //特征
         CHECK(datum.SerializeToString(&out));
+        //写入键值对
         txns.at(i)->Put(std::string(key_str, length), out);
         ++image_indices[i];
         if (image_indices[i] % 1000 == 0) {
